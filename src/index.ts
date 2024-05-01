@@ -22,18 +22,20 @@ io.on("connection", (socket) => {
   socket.emit("message", "welcome");
   socket.broadcast.emit("message", "new client has joined");
 
-  socket.on("message", (message) => {
+  socket.on("message", (message, cb) => {
     io.emit("message", message);
+    cb("delivered");
   });
 
   socket.on("disconnect", () => {
     socket.broadcast.emit("message", "client left");
   });
-  socket.on("location", (location) => {
+  socket.on("location", (location, cb) => {
     io.emit(
       "message",
       `https://google.com/maps?q=${location.lat},${location.long}`
     );
+    cb("your location has been shared");
   });
 
   //   socket.on("increment", () => {
@@ -45,5 +47,5 @@ io.on("connection", (socket) => {
 const port = process.env.PORT;
 
 server.listen(port, () => {
-  console.log("Server is running on port " + port);
+  console.log("Server is running on port http://localhost:" + port);
 });

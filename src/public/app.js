@@ -21,7 +21,9 @@ msg.addEventListener("change", (e) => {
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  socket.emit("message", message);
+  socket.emit("message", message, (msg) => {
+    console.log("Message has been delivered", msg);
+  });
 });
 
 // CLIENT GET LOCATION
@@ -34,10 +36,16 @@ locationBtn.addEventListener("click", () => {
   //   }
   navigator.geolocation.getCurrentPosition((position) => {
     // console.log(position);
-    socket.emit("location", {
-      lat: position.coords.latitude,
-      long: position.coords.longitude,
-    });
+    socket.emit(
+      "location",
+      {
+        lat: position.coords.latitude,
+        long: position.coords.longitude,
+      },
+      (msg) => {
+        console.log(msg);
+      }
+    );
   });
 });
 
