@@ -1,28 +1,52 @@
+// CLIENT EMIT MESSAGES
+const form = document.querySelector("form");
+const formInput = document.querySelector(".input");
+const locationBtn = document.querySelector("#location");
+const formBtn = document.querySelector(".btn");
+const messageEl = document.getElementById("messages");
+
+// Templates
+const msgTemplate = document.getElementById("message-template").innerHTML;
+const loactionTemplate = document.getElementById("location-template").innerHTML;
+
 const socket = io();
 
 // ON GET MESSAGE
 socket.on("message", (msg) => {
-  console.log(msg);
+  const html = Mustache.render(msgTemplate, {
+    message: msg.text,
+    createdAt: moment(msg.createdAt).format("h:mm a"),
+  });
+  messageEl.insertAdjacentHTML("beforeend", html);
+});
+// ON GET LOCATION
+socket.on("location", (msg) => {
+  const html = Mustache.render(loactionTemplate, {
+    location: msg.text,
+    createdAt: moment(msg.createdAt).format("h:mm a"),
+  });
+  messageEl.insertAdjacentHTML("beforeend", html);
 });
 // ON DISCONNECT CLIENT
 socket.on("disconnect", (msg) => {
   console.log(msg);
 });
 
-// CLIENT EMIT MESSAGES
-const form = document.querySelector("form");
-const msg = document.querySelector("input");
-const locationBtn = document.querySelector("#location");
 let message = "";
 
-msg.addEventListener("change", (e) => {
+formInput.addEventListener("change", (e) => {
   message = e.target.value;
 });
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
+  formBtn.setAttribute("disabled", "disabled");
+
   socket.emit("message", message, (msg) => {
-    console.log("Message has been delivered", msg);
+    formBtn.removeAttribute("disabled");
+
+    formInput.value = "";
+    formInput.focus();
   });
 });
 
@@ -34,6 +58,8 @@ locationBtn.addEventListener("click", () => {
   //       "This browser doesn't support geolocation, please try another"
   //     );
   //   }
+
+  locationBtn.setAttribute("disabled", "disabled");
   navigator.geolocation.getCurrentPosition((position) => {
     // console.log(position);
     socket.emit(
@@ -44,6 +70,7 @@ locationBtn.addEventListener("click", () => {
       },
       (msg) => {
         console.log(msg);
+        locationBtn.removeAttribute("disabled");
       }
     );
   });
