@@ -4,10 +4,12 @@ const formInput = document.querySelector(".input");
 const locationBtn = document.querySelector("#location");
 const formBtn = document.querySelector(".btn");
 const messageEl = document.getElementById("messages");
+const sidbarEl = document.querySelector(".chat__sidebar");
 
 // Templates
 const msgTemplate = document.getElementById("message-template").innerHTML;
 const loactionTemplate = document.getElementById("location-template").innerHTML;
+const sidebarTemplate = document.getElementById("sidebar__template").innerHTML;
 
 const socket = io();
 
@@ -18,6 +20,7 @@ const { username, room } = Qs.parse(location.search, {
 // ON GET MESSAGE
 socket.on("message", (msg) => {
   const html = Mustache.render(msgTemplate, {
+    username: msg.username,
     message: msg.text,
     createdAt: moment(msg.createdAt).format("h:mm a"),
   });
@@ -25,7 +28,9 @@ socket.on("message", (msg) => {
 });
 // ON GET LOCATION
 socket.on("location", (msg) => {
+  console.log(msg);
   const html = Mustache.render(loactionTemplate, {
+    username: msg.username,
     location: msg.text,
     createdAt: moment(msg.createdAt).format("h:mm a"),
   });
@@ -78,6 +83,17 @@ locationBtn.addEventListener("click", () => {
       }
     );
   });
+});
+
+// GET ROOM DATA USERS
+
+socket.on("roomData", (users) => {
+  const html = Mustache.render(sidebarTemplate, {
+    room: users.room,
+    users: users.users,
+  });
+
+  sidbarEl.innerHTML("beforeend", html);
 });
 
 // SEND USERNAME AND ROOM

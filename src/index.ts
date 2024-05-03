@@ -22,25 +22,42 @@ io.on("connection", (socket) => {
   console.log("New websocket connection");
 
   socket.on("message", (message, cb) => {
-    io.emit("message", generateMessage(message));
-    cb("delivered");
+    const user = getUser(socket.id);
+    if (user) {
+      io.to(user?.room).emit(
+        "message",
+        generateMessage(message, user.username)
+      );
+      cb("delivered");
+    }
   });
 
   socket.on("disconnect", () => {
     const user: User | undefined = removeUser(socket.id);
-    if (user)
+    if (user) {
       socket.broadcast
         .to(user.room)
-        .emit("message", generateMessage(`${user.username} has left`));
+        .emit("message", generateMessage(`Admin: ${user.username} has left`));
+
+      socket.to(user.room).emit("roomData", {
+        room: user.room,
+        users: getUsers(user.room),
+      });
+    }
   });
   socket.on("location", (location, cb) => {
-    io.emit(
-      "location",
-      generateMessage(
-        `https://google.com/maps?q=${location.lat},${location.long}`
-      )
-    );
-    cb("your location has been shared");
+    const user = getUser(socket.id);
+    if (user) {
+      io.to(user.room).emit(
+        "location",
+        generateMessage(
+          `https://google.com/maps?q=${location.lat},${location.long}`,
+          user.username
+        )
+      );
+
+      cb("your location has been shared");
+    }
   });
 
   socket.on("join", ({ username, room }, callback) => {
@@ -56,10 +73,17 @@ io.on("connection", (socket) => {
       // io.emit, socket.emit, socket.broadcast.emit()
       // io.to().emit, socket.to.emit(), socket.broadcast.to().emit()
 
-      socket.emit("message", generateMessage("welcome!"));
+      socket.emit(
+        "message",
+        generateMessage("Admin: welcome! " + user.username)
+      );
       socket.broadcast
         .to(user.room)
-        .emit("message", generateMessage(`${user.username} has joined`));
+        .emit("message", generateMessage(`Admin: ${user.username} has joined`));
+      socket.to(user.room).emit("roomData", {
+        room: user.room,
+        users: getUsers(user.room),
+      });
     } else {
       callback(user.error);
     }

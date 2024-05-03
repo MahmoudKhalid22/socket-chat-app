@@ -17,7 +17,13 @@
 
         <div class="compose">
           <form action="">
-            <input type="text" class="input" placeholder="Write a message" />
+            <input
+              type="text"
+              class="input"
+              placeholder="Write a message"
+              required
+              autocomplete="off"
+            />
             <button type="submit" class="btn">Send</button>
           </form>
           <button id="location">send my location</button>
@@ -28,7 +34,7 @@
     <script id="location-template" type="text/html">
       <div class="message">
         <p>
-          <span class="message__name">some username</span>
+          <span class="message__name">{{username}}</span>
           <span class="message__meta"> {{createdAt}} </span>
         </p>
         <a href="{{location}}" target="_blank">my location</a>
@@ -38,11 +44,21 @@
     <script id="message-template" type="text/html">
       <div class="message">
         <p>
-          <span class="message__name">Username</span>
+          <span class="message__name">{{username}}</span>
           <span class="message__meta"> {{createdAt}} </span>
         </p>
         <p>{{message}}</p>
       </div>
+    </script>
+
+    <script id="sidebar__template" type="text/html">
+      <p class="room-title">{{room}}</p>
+      <h2 class="list-title">Users</h2>
+      <ul>
+        {{#users}}
+        <li>{{username}}</li>
+        {{/users}}
+      </ul>
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
