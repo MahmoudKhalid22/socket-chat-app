@@ -20,9 +20,6 @@ app.use(express.static(publicDirPath));
 io.on("connection", (socket) => {
   console.log("New websocket connection");
 
-  socket.emit("message", generateMessage("welcome!"));
-  socket.broadcast.emit("message", generateMessage("new client has joined"));
-
   socket.on("message", (message, cb) => {
     io.emit("message", generateMessage(message));
     cb("delivered");
@@ -39,6 +36,18 @@ io.on("connection", (socket) => {
       )
     );
     cb("your location has been shared");
+  });
+
+  socket.on("join", ({ username, room }) => {
+    socket.join(room);
+
+    // io.emit, socket.emit, socket.broadcast.emit()
+    // io.to().emit, socket.to.emit(), socket.broadcast.to().emit()
+
+    socket.emit("message", generateMessage("welcome!"));
+    socket.broadcast
+      .to(room)
+      .emit("message", generateMessage(`${username} has joined`));
   });
 
   //   socket.on("increment", () => {

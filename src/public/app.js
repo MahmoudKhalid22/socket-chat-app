@@ -11,6 +11,10 @@ const loactionTemplate = document.getElementById("location-template").innerHTML;
 
 const socket = io();
 
+const { username, room } = Qs.parse(location.search, {
+  ignoreQueryPrefix: true,
+});
+
 // ON GET MESSAGE
 socket.on("message", (msg) => {
   const html = Mustache.render(msgTemplate, {
@@ -50,7 +54,7 @@ form.addEventListener("submit", (e) => {
   });
 });
 
-// CLIENT GET LOCATION
+// CLIENT SEND HIS LOCATION
 
 locationBtn.addEventListener("click", () => {
   //   if (!navigator.geolocation) {
@@ -75,6 +79,9 @@ locationBtn.addEventListener("click", () => {
     );
   });
 });
+
+// SEND USERNAME AND ROOM
+socket.emit("join", { username, room });
 
 // COUNTER CHALLENGE
 // socket.on("countUpdated", (count) => {
