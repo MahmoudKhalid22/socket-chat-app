@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { Server } from "socket.io";
 import generateMessage from "./utils/message";
+import { addUser, getUser, getUsers, removeUser, User } from "./utils/users";
 
 dotenv.config();
 
@@ -26,7 +27,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    socket.broadcast.emit("message", generateMessage("client left"));
+    const user: User | undefined = removeUser(socket.id);
+    if (user)
+      socket.broadcast
+        .to(user.room)
+        .emit("message", generateMessage(`${user.username} has left`));
   });
   socket.on("location", (location, cb) => {
     io.emit(
@@ -38,16 +43,26 @@ io.on("connection", (socket) => {
     cb("your location has been shared");
   });
 
-  socket.on("join", ({ username, room }) => {
-    socket.join(room);
+  socket.on("join", ({ username, room }, callback) => {
+    const user: User | { error: string } = addUser({
+      id: socket.id,
+      username,
+      room,
+    });
 
-    // io.emit, socket.emit, socket.broadcast.emit()
-    // io.to().emit, socket.to.emit(), socket.broadcast.to().emit()
+    if ("room" in user) {
+      socket.join(user!.room);
 
-    socket.emit("message", generateMessage("welcome!"));
-    socket.broadcast
-      .to(room)
-      .emit("message", generateMessage(`${username} has joined`));
+      // io.emit, socket.emit, socket.broadcast.emit()
+      // io.to().emit, socket.to.emit(), socket.broadcast.to().emit()
+
+      socket.emit("message", generateMessage("welcome!"));
+      socket.broadcast
+        .to(user.room)
+        .emit("message", generateMessage(`${user.username} has joined`));
+    } else {
+      callback(user.error);
+    }
   });
 
   //   socket.on("increment", () => {

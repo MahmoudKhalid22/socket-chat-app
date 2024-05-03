@@ -81,7 +81,12 @@ locationBtn.addEventListener("click", () => {
 });
 
 // SEND USERNAME AND ROOM
-socket.emit("join", { username, room });
+socket.emit("join", { username, room }, (err) => {
+  if (err) {
+    alert(err);
+    location.href = "/";
+  }
+});
 
 // COUNTER CHALLENGE
 // socket.on("countUpdated", (count) => {
