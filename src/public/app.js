@@ -13,6 +13,11 @@ const sidebarTemplate = document.getElementById("sidebar__template").innerHTML;
 
 const socket = io();
 
+const autoScroll = () => {
+  // Scroll to the bottom
+  messageEl.scrollTop = messageEl.scrollHeight;
+};
+
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
@@ -25,6 +30,7 @@ socket.on("message", (msg) => {
     createdAt: moment(msg.createdAt).format("h:mm a"),
   });
   messageEl.insertAdjacentHTML("beforeend", html);
+  autoScroll();
 });
 // ON GET LOCATION
 socket.on("location", (msg) => {
@@ -35,6 +41,7 @@ socket.on("location", (msg) => {
     createdAt: moment(msg.createdAt).format("h:mm a"),
   });
   messageEl.insertAdjacentHTML("beforeend", html);
+  autoScroll();
 });
 // ON DISCONNECT CLIENT
 socket.on("disconnect", (msg) => {
